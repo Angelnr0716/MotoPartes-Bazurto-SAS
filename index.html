@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MotoPartes Bazurto SAS - Diseño de Base de Datos</title>
+    <meta
+      name="description"
+      content="Documentación del diseño, normalización y diccionario de datos de la base de datos de MotoPartes Bazurto SAS."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-dark: #0f1115;
+        --bg-card: rgba(25, 28, 36, 0.6);
+        --primary: #f97316; /* MotoPartes Orange */
+        --primary-hover: #ea580c;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: rgba(255, 255, 255, 0.1);
+        --error: #ef4444;
+        --success: #10b981;
+        --glass-blur: 12px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        line-height: 1.6;
+        background-image:
+          radial-gradient(
+            circle at 15% 50%,
+            rgba(249, 115, 22, 0.05),
+            transparent 25%
+          ),
+          radial-gradient(
+            circle at 85% 30%,
+            rgba(249, 115, 22, 0.08),
+            transparent 25%
+          );
+        background-attachment: fixed;
+      }
+
+      /* Typography */
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-main);
+      }
+
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1.5rem;
+      }
+
+      h3 {
+        font-size: 1.1rem;
+        color: #e2e8f0;
+        margin-top: 1.5rem;
+      }
+
+      p {
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+      }
+
+      code {
+        font-family: "Fira Code", monospace;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: #e2e8f0;
+      }
+
+      /* Layout */
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(
+          to bottom,
+          rgba(249, 115, 22, 0.1),
+          transparent
+        );
+        border-bottom: 1px solid var(--border);
+      }
+
+      .hero h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(to right, #fff, var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+      }
+
+      .hero p {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+      }
+
+      /* Cards (Glassmorphism) */
+      .card {
+        background: var(--bg-card);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.2),
+          0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        border-color: rgba(249, 115, 22, 0.3);
+      }
+
+      .content-block {
+        margin-bottom: 1.5rem;
+      }
+
+      /* Tables */
+      .table-responsive {
+        overflow-x: auto;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      th,
+      td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      th {
+        background: rgba(255, 255, 255, 0.05);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #cbd5e1;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      /* Badges & Tags */
+      .badge {
+        background: var(--primary);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .badge-pk {
+        background: #8b5cf6;
+      }
+
+      .highlight-error {
+        color: var(--error);
+        font-weight: bold;
+        background: rgba(239, 68, 68, 0.1);
+        padding: 0.1rem 0.3rem;
+        border-radius: 4px;
+      }
+
+      .note {
+        font-size: 0.85rem;
+        font-style: italic;
+        opacity: 0.8;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .tag {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--border);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-family: "Fira Code", monospace;
+        transition: background 0.2s;
+      }
+
+      .tag:hover {
+        background: rgba(249, 115, 22, 0.2);
+        border-color: var(--primary);
+      }
+
+      /* Grids */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      @media (min-width: 768px) {
+        .grid-2 {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .dependency-box {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border);
+        padding: 1rem;
+        border-radius: 8px;
+      }
+
+      .dependency-box ul {
+        list-style-type: none;
+      }
+
+      .dependency-box li {
+        padding: 0.25rem 0;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+
+      .dependency-box li::before {
+        content: "→";
+        color: var(--primary);
+        margin-right: 0.5rem;
+      }
+
+      .dependency-flow {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 3px solid var(--primary);
+        margin: 1rem 0;
+        font-size: 1.1rem;
+      }
+
+      .dependency-list {
+        list-style-type: none;
+      }
+
+      .dependency-list li {
+        margin-bottom: 0.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+      }
+
+      .info-box {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-left: 3px solid var(--success);
+        padding: 1.5rem;
+        border-radius: 8px;
+      }
+
+      /* Code Block */
+      .code-container {
+        background: #000;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+
+      pre {
+        margin: 0;
+        padding: 1.5rem;
+        overflow-x: auto;
+      }
+
+      code.language-sql {
+        color: #a6accd;
+      }
+
+      /* Animations */
+      .fade-in {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .card:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .card:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .card:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+      .card:nth-child(5) {
+        animation-delay: 0.5s;
+      }
+      .card:nth-child(6) {
+        animation-delay: 0.6s;
+      }
+
+      footer {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        border-top: 1px solid var(--border);
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-content">
+        <h1>MotoPartes Bazurto SAS</h1>
+        <p>Documentación Oficial: Normalización y Diseño de Base de Datos</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- ENTREGABLE 1 -->
+      <section class="card fade-in">
+        <h2><span class="badge">Entregable 1</span> Análisis de Problemas</h2>
+
+        <div class="content-block">
+          <h3>a) Campos que violan la Primera Forma Normal (1FN)</h3>
+          <p>
+            Los campos <code>COD_REPUESTOS</code>,
+            <code>NOMBRES_REPUESTOS</code>, <code>CANT_REPUESTOS</code> y
+            <code>PRECIOS_UNIT</code> violan la 1FN porque contienen varios
+            valores dentro de una misma celda separados por comas. La Primera
+            Forma Normal exige que cada atributo tenga un único valor atómico.
+          </p>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID_VENTA</th>
+                  <th>COD_REPUESTOS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>V-001</td>
+                  <td><span class="highlight-error">RP-001, RP-002</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note">
+            En una base de datos relacional cada fila debe contener un solo
+            valor por columna.
+          </p>
+        </div>
+
+        <div class="content-block">
+          <h3>b) Dependencias parciales</h3>
+          <p>
+            Al aplicar 1FN, la clave primaria será:
+            <strong>(ID_VENTA, COD_REPUESTO)</strong>
+          </p>
+          <p>
+            Existen dependencias parciales porque algunos atributos dependen
+            únicamente de una parte de la clave compuesta.
+          </p>
+
+          <div class="grid-2">
+            <div class="dependency-box">
+              <h4>Dependen de ID_VENTA:</h4>
+              <ul>
+                <li>FECHA</li>
+                <li>CEDULA_CLIENTE</li>
+                <li>COD_EMPLEADO</li>
+              </ul>
+            </div>
+            <div class="dependency-box">
+              <h4>Dependen de CEDULA_CLIENTE:</h4>
+              <ul>
+                <li>NOMBRE_CLIENTE</li>
+                <li>BARRIO_CLIENTE</li>
+                <li>CIUDAD_CLIENTE</li>
+              </ul>
+            </div>
+            <div class="dependency-box">
+              <h4>Dependen de COD_EMPLEADO:</h4>
+              <ul>
+                <li>NOMBRE_EMPLEADO</li>
+                <li>CARGO_EMPLEADO</li>
+                <li>SALARIO_EMPLEADO</li>
+              </ul>
+            </div>
+            <div class="dependency-box">
+              <h4>Dependen de COD_REPUESTO:</h4>
+              <ul>
+                <li>NOMBRE_REPUESTO</li>
+                <li>PRECIO_UNITARIO</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-block">
+          <h3>c) Dependencia transitiva</h3>
+          <div class="dependency-flow">
+            <code
+              >COD_EMPLEADO &rarr; CARGO_EMPLEADO &rarr; SALARIO_EMPLEADO</code
+            >
+          </div>
+          <p>
+            El salario depende del cargo y no directamente del código del
+            empleado.
+          </p>
+        </div>
+
+        <div class="content-block">
+          <h3>d) Anomalía de actualización</h3>
+          <p>
+            Si cambia el salario de los Asesores Comerciales de $1.500.000 a
+            $1.700.000, habría que modificar todas las filas donde aparezcan
+            esos empleados. Si alguna fila no se actualiza, existirán datos
+            inconsistentes.
+          </p>
+        </div>
+      </section>
+
+      <!-- ENTREGABLE 2 -->
+      <section class="card fade-in">
+        <h2>
+          <span class="badge">Entregable 2</span> Primera Forma Normal (1FN)
+        </h2>
+
+        <div class="content-block">
+          <h3>Tabla expandida (ejemplo)</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID_VENTA</th>
+                  <th>FECHA</th>
+                  <th>CLIENTE</th>
+                  <th>EMPLEADO</th>
+                  <th>COD_REPUESTO</th>
+                  <th>CANTIDAD</th>
+                  <th>PRECIO_UNIT</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>V-001</td>
+                  <td>2024-10-01</td>
+                  <td>Pedro Acosta</td>
+                  <td>E-01</td>
+                  <td>RP-001</td>
+                  <td>2</td>
+                  <td>45000</td>
+                </tr>
+                <tr>
+                  <td>V-001</td>
+                  <td>2024-10-01</td>
+                  <td>Pedro Acosta</td>
+                  <td>E-01</td>
+                  <td>RP-002</td>
+                  <td>1</td>
+                  <td>18000</td>
+                </tr>
+                <tr>
+                  <td>V-002</td>
+                  <td>2024-10-01</td>
+                  <td>Carmen Reyes</td>
+                  <td>E-01</td>
+                  <td>RP-003</td>
+                  <td>4</td>
+                  <td>22000</td>
+                </tr>
+                <tr>
+                  <td>V-003</td>
+                  <td>2024-10-02</td>
+                  <td>Julio Páez</td>
+                  <td>E-02</td>
+                  <td>RP-005</td>
+                  <td>1</td>
+                  <td>85000</td>
+                </tr>
+                <tr>
+                  <td>V-003</td>
+                  <td>2024-10-02</td>
+                  <td>Julio Páez</td>
+                  <td>E-02</td>
+                  <td>RP-006</td>
+                  <td>1</td>
+                  <td>120000</td>
+                </tr>
+                <tr>
+                  <td>V-003</td>
+                  <td>2024-10-02</td>
+                  <td>Julio Páez</td>
+                  <td>E-02</td>
+                  <td>RP-007</td>
+                  <td>2</td>
+                  <td>28000</td>
+                </tr>
+                <tr>
+                  <td>V-004</td>
+                  <td>2024-10-02</td>
+                  <td>Pedro Acosta</td>
+                  <td>E-03</td>
+                  <td>RP-004</td>
+                  <td>1</td>
+                  <td>35000</td>
+                </tr>
+                <tr>
+                  <td>V-005</td>
+                  <td>2024-10-03</td>
+                  <td>Sandra Villalba</td>
+                  <td>E-01</td>
+                  <td>RP-001</td>
+                  <td>2</td>
+                  <td>45000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="content-block info-box">
+          <h4>Nueva clave primaria</h4>
+          <p><strong>PK(ID_VENTA, COD_REPUESTO)</strong></p>
+          <p>
+            <em>Justificación:</em> una venta puede contener varios repuestos y
+            un repuesto puede aparecer en muchas ventas.
+          </p>
+          <p>
+            <em>Cambios realizados:</em> Se eliminaron los campos multivaluados
+            y cada repuesto vendido pasó a ocupar una fila independiente.
+          </p>
+        </div>
+      </section>
+
+      <!-- ENTREGABLE 3 -->
+      <section class="card fade-in">
+        <h2>
+          <span class="badge">Entregable 3</span> Segunda Forma Normal (2FN)
+        </h2>
+
+        <div class="content-block">
+          <h3>Dependencias parciales resueltas</h3>
+          <ul class="dependency-list">
+            <li>
+              <code>ID_VENTA &rarr; FECHA, CEDULA_CLIENTE, COD_EMPLEADO</code>
+            </li>
+            <li>
+              <code
+                >CEDULA_CLIENTE &rarr; NOMBRE_CLIENTE, BARRIO_CLIENTE,
+                CIUDAD_CLIENTE</code
+              >
+            </li>
+            <li>
+              <code
+                >COD_EMPLEADO &rarr; NOMBRE_EMPLEADO, CARGO_EMPLEADO,
+                SALARIO_EMPLEADO</code
+              >
+            </li>
+            <li>
+              <code>COD_REPUESTO &rarr; NOMBRE_REPUESTO, PRECIO_UNITARIO</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="content-block">
+          <h3>Tablas resultantes</h3>
+
+          <h4>CLIENTES</h4>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>CEDULA_CLIENTE (PK)</th>
+                  <th>NOMBRE_CLIENTE</th>
+                  <th>BARRIO_CLIENTE</th>
+                  <th>CIUDAD_CLIENTE</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>100123456</td>
+                  <td>Pedro Acosta Dávila</td>
+                  <td>Manga</td>
+                  <td>Cartagena</td>
+                </tr>
+                <tr>
+                  <td>200234567</td>
+                  <td>Carmen Reyes Polo</td>
+                  <td>Torices</td>
+                  <td>Cartagena</td>
+                </tr>
+                <tr>
+                  <td>300345678</td>
+                  <td>Julio Páez Hernández</td>
+                  <td>Olaya</td>
+                  <td>Cartagena</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>EMPLEADOS</h4>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>COD_EMPLEADO (PK)</th>
+                  <th>NOMBRE_EMPLEADO</th>
+                  <th>CARGO_EMPLEADO</th>
+                  <th>SALARIO_EMPLEADO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>E-01</td>
+                  <td>Rosmery Causado Gómez</td>
+                  <td>Asesor Comercial</td>
+                  <td>1500000</td>
+                </tr>
+                <tr>
+                  <td>E-02</td>
+                  <td>Andrés Parra Herazo</td>
+                  <td>Asesor Comercial</td>
+                  <td>1500000</td>
+                </tr>
+                <tr>
+                  <td>E-03</td>
+                  <td>Beatriz Herazo Turizo</td>
+                  <td>Supervisora de Ventas</td>
+                  <td>2800000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>REPUESTOS</h4>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>COD_REPUESTO (PK)</th>
+                  <th>NOMBRE_REPUESTO</th>
+                  <th>PRECIO_UNITARIO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>RP-001</td>
+                  <td>Pastillas freno delanteras</td>
+                  <td>45000</td>
+                </tr>
+                <tr>
+                  <td>RP-002</td>
+                  <td>Filtro de aceite</td>
+                  <td>18000</td>
+                </tr>
+                <tr>
+                  <td>RP-003</td>
+                  <td>Bujía NGK C7HSA</td>
+                  <td>22000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <h4>VENTAS</h4>
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID_VENTA (PK)</th>
+                      <th>FECHA</th>
+                      <th>CEDULA_CLIENTE (FK)</th>
+                      <th>COD_EMPLEADO (FK)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>V-001</td>
+                      <td>2024-10-01</td>
+                      <td>100123456</td>
+                      <td>E-01</td>
+                    </tr>
+                    <tr>
+                      <td>V-002</td>
+                      <td>2024-10-01</td>
+                      <td>200234567</td>
+                      <td>E-01</td>
+                    </tr>
+                    <tr>
+                      <td>V-003</td>
+                      <td>2024-10-02</td>
+                      <td>300345678</td>
+                      <td>E-02</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <h4>DETALLE_VENTA</h4>
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID_VENTA (FK)</th>
+                      <th>COD_REPUESTO (FK)</th>
+                      <th>CANTIDAD</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>V-001</td>
+                      <td>RP-001</td>
+                      <td>2</td>
+                    </tr>
+                    <tr>
+                      <td>V-001</td>
+                      <td>RP-002</td>
+                      <td>1</td>
+                    </tr>
+                    <tr>
+                      <td>V-002</td>
+                      <td>RP-003</td>
+                      <td>4</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="note text-center">PK = (ID_VENTA, COD_REPUESTO)</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ENTREGABLE 4 -->
+      <section class="card fade-in">
+        <h2>
+          <span class="badge">Entregable 4</span> Tercera Forma Normal (3FN)
+        </h2>
+
+        <div class="content-block">
+          <h3>Dependencia transitiva resuelta</h3>
+          <div class="dependency-flow">
+            <code
+              >COD_EMPLEADO &rarr; CARGO_EMPLEADO &rarr; SALARIO_EMPLEADO</code
+            >
+          </div>
+        </div>
+
+        <div class="content-block">
+          <h3>Nueva tabla creada y ajustada</h3>
+
+          <div class="grid-2">
+            <div>
+              <h4>CARGOS</h4>
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>COD_CARGO (PK)</th>
+                      <th>NOMBRE_CARGO</th>
+                      <th>SALARIO</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>C01</td>
+                      <td>Asesor Comercial</td>
+                      <td>1500000</td>
+                    </tr>
+                    <tr>
+                      <td>C02</td>
+                      <td>Supervisora de Ventas</td>
+                      <td>2800000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <h4>EMPLEADOS (Actualizada)</h4>
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>COD_EMPLEADO (PK)</th>
+                      <th>NOMBRE_EMPLEADO</th>
+                      <th>COD_CARGO (FK)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>E-01</td>
+                      <td>Rosmery Causado Gómez</td>
+                      <td>C01</td>
+                    </tr>
+                    <tr>
+                      <td>E-02</td>
+                      <td>Andrés Parra Herazo</td>
+                      <td>C01</td>
+                    </tr>
+                    <tr>
+                      <td>E-03</td>
+                      <td>Beatriz Herazo Turizo</td>
+                      <td>C02</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-block info-box">
+          <h4>Modelo Final Resultante</h4>
+          <div class="tags">
+            <span class="tag">CLIENTES</span>
+            <span class="tag">CARGOS</span>
+            <span class="tag">EMPLEADOS</span>
+            <span class="tag">REPUESTOS</span>
+            <span class="tag">VENTAS</span>
+            <span class="tag">DETALLE_VENTA</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ENTREGABLE 5 -->
+      <section class="card fade-in">
+        <h2><span class="badge">Entregable 5</span> Script SQL PostgreSQL</h2>
+        <div class="code-container">
+          <pre><code class="language-sql">-- Tabla de clientes
+CREATE TABLE clientes (
+    cedula_cliente VARCHAR(20) PRIMARY KEY,
+    nombre_cliente VARCHAR(100) NOT NULL,
+    barrio_cliente VARCHAR(50) NOT NULL,
+    ciudad_cliente VARCHAR(50) NOT NULL
+);
+
+-- Tabla de cargos
+CREATE TABLE cargos (
+    cod_cargo VARCHAR(5) PRIMARY KEY,
+    nombre_cargo VARCHAR(50) NOT NULL,
+    salario NUMERIC(10,2) NOT NULL CHECK (salario > 0)
+);
+
+-- Tabla de empleados
+CREATE TABLE empleados (
+    cod_empleado VARCHAR(10) PRIMARY KEY,
+    nombre_empleado VARCHAR(100) NOT NULL,
+    cod_cargo VARCHAR(5) NOT NULL,
+    FOREIGN KEY (cod_cargo)
+        REFERENCES cargos(cod_cargo)
+        ON DELETE RESTRICT
+);
+
+-- Tabla de repuestos
+CREATE TABLE repuestos (
+    cod_repuesto VARCHAR(10) PRIMARY KEY,
+    nombre_repuesto VARCHAR(100) NOT NULL,
+    categoria VARCHAR(50) NOT NULL,
+    precio_unitario NUMERIC(10,2) NOT NULL CHECK(precio_unitario > 0)
+);
+
+-- Tabla de ventas
+CREATE TABLE ventas (
+    id_venta VARCHAR(10) PRIMARY KEY,
+    fecha DATE NOT NULL,
+    cedula_cliente VARCHAR(20) NOT NULL,
+    cod_empleado VARCHAR(10) NOT NULL,
+    FOREIGN KEY (cedula_cliente)
+        REFERENCES clientes(cedula_cliente)
+        ON DELETE RESTRICT,
+    FOREIGN KEY (cod_empleado)
+        REFERENCES empleados(cod_empleado)
+        ON DELETE RESTRICT
+);
+
+-- Tabla detalle venta
+CREATE TABLE detalle_venta (
+    id_venta VARCHAR(10),
+    cod_repuesto VARCHAR(10),
+    cantidad INTEGER NOT NULL CHECK(cantidad > 0),
+    PRIMARY KEY(id_venta, cod_repuesto),
+    FOREIGN KEY(id_venta)
+        REFERENCES ventas(id_venta)
+        ON DELETE CASCADE,
+    FOREIGN KEY(cod_repuesto)
+        REFERENCES repuestos(cod_repuesto)
+        ON DELETE RESTRICT
+);</code></pre>
+        </div>
+      </section>
+
+      <!-- ENTREGABLE 6 -->
+      <section class="card fade-in">
+        <h2><span class="badge">Entregable 6</span> Diccionario de Datos</h2>
+        <p>Ejemplo para tabla <strong>CLIENTES</strong>:</p>
+        <div class="table-responsive">
+          <table class="dictionary-table">
+            <thead>
+              <tr>
+                <th>Campo</th>
+                <th>Tipo</th>
+                <th>Tamaño</th>
+                <th>Nulo</th>
+                <th>Clave</th>
+                <th>FK</th>
+                <th>CHECK</th>
+                <th>Descripción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>cedula_cliente</code></td>
+                <td>VARCHAR</td>
+                <td>20</td>
+                <td>NO</td>
+                <td><span class="badge badge-pk">PK</span></td>
+                <td>—</td>
+                <td>—</td>
+                <td>Identificación del cliente</td>
+              </tr>
+              <tr>
+                <td><code>nombre_cliente</code></td>
+                <td>VARCHAR</td>
+                <td>100</td>
+                <td>NO</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>Nombre completo del cliente</td>
+              </tr>
+              <tr>
+                <td><code>barrio_cliente</code></td>
+                <td>VARCHAR</td>
+                <td>50</td>
+                <td>NO</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>Barrio de residencia</td>
+              </tr>
+              <tr>
+                <td><code>ciudad_cliente</code></td>
+                <td>VARCHAR</td>
+                <td>50</td>
+                <td>NO</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>Ciudad de residencia</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 MotoPartes Bazurto SAS. Generado automáticamente.</p>
+    </footer>
+  </body>
+</html>
