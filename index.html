@@ -1,903 +1,1376 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MotoPartes Bazurto SAS - Diseño de Base de Datos</title>
-    <meta
-      name="description"
-      content="Documentación del diseño, normalización y diccionario de datos de la base de datos de MotoPartes Bazurto SAS."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --bg-dark: #0f1115;
-        --bg-card: rgba(25, 28, 36, 0.6);
-        --primary: #f97316; /* MotoPartes Orange */
-        --primary-hover: #ea580c;
-        --text-main: #f8fafc;
-        --text-muted: #94a3b8;
-        --border: rgba(255, 255, 255, 0.1);
-        --error: #ef4444;
-        --success: #10b981;
-        --glass-blur: 12px;
-      }
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MotoPartes Bazurto SAS - Diseño de Base de Datos</title>
+  <meta name="description"
+    content="Documentación del diseño, normalización y diccionario de datos de la base de datos de MotoPartes Bazurto SAS." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    :root {
+      --bg-dark: #0f1115;
+      --bg-card: rgba(25, 28, 36, 0.6);
+      --primary: #3e56f3;
+      /* MotoPartes Orange */
+      --primary-hover: #ea580c;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --error: #ef4444;
+      --success: #10b981;
+      --glass-blur: 12px;
+    }
 
-      body {
-        font-family: "Inter", sans-serif;
-        background-color: var(--bg-dark);
-        color: var(--text-main);
-        line-height: 1.6;
-        background-image:
-          radial-gradient(
-            circle at 15% 50%,
-            rgba(249, 115, 22, 0.05),
-            transparent 25%
-          ),
-          radial-gradient(
-            circle at 85% 30%,
-            rgba(249, 115, 22, 0.08),
-            transparent 25%
-          );
-        background-attachment: fixed;
-      }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-      /* Typography */
-      h1,
-      h2,
-      h3,
-      h4 {
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: var(--text-main);
-      }
+    html {
+      scroll-behavior: smooth;
+    }
 
-      h2 {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        font-size: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid var(--border);
-        margin-bottom: 1.5rem;
-      }
+    /* Progress bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), #818cf8);
+      z-index: 9999;
+      transition: width .1s;
+    }
 
-      h3 {
-        font-size: 1.1rem;
-        color: #e2e8f0;
-        margin-top: 1.5rem;
-      }
+    /* Active nav link */
+    .navbar-links a.active {
+      color: #fff;
+      background: var(--primary);
+      border-color: var(--primary);
+    }
 
-      p {
-        color: var(--text-muted);
-        margin-bottom: 1rem;
-      }
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: #000000;
+      color: var(--text-main);
+      line-height: 1.6;
+      background-image:
+        radial-gradient(circle at 15% 50%,
+          rgba(15, 40, 100, 0.25),
+          transparent 40%),
+        radial-gradient(circle at 85% 30%,
+          rgba(10, 30, 80, 0.35),
+          transparent 40%);
+      background-attachment: fixed;
+    }
 
-      code {
-        font-family: "Fira Code", monospace;
-        background: rgba(0, 0, 0, 0.3);
-        padding: 0.2rem 0.4rem;
-        border-radius: 4px;
-        font-size: 0.9em;
-        color: #e2e8f0;
-      }
+    /* Typography */
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-main);
+    }
 
-      /* Layout */
-      .container {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 2rem;
-      }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
 
-      .hero {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: linear-gradient(
-          to bottom,
-          rgba(249, 115, 22, 0.1),
-          transparent
-        );
-        border-bottom: 1px solid var(--border);
-      }
+    h3 {
+      font-size: 1.1rem;
+      color: #e2e8f0;
+      margin-top: 1.5rem;
+    }
 
-      .hero h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        background: linear-gradient(to right, #fff, var(--primary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 0.5rem;
-      }
+    p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
 
-      .hero p {
-        font-size: 1.1rem;
-        color: var(--text-muted);
-      }
+    code {
+      font-family: "Fira Code", monospace;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: #e2e8f0;
+    }
 
-      /* Cards (Glassmorphism) */
-      .card {
-        background: var(--bg-card);
-        backdrop-filter: blur(var(--glass-blur));
-        -webkit-backdrop-filter: blur(var(--glass-blur));
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow:
-          0 4px 6px -1px rgba(0, 0, 0, 0.1),
-          0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        transition:
-          transform 0.3s ease,
-          box-shadow 0.3s ease;
-      }
+    /* Layout */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
 
-      .card:hover {
-        transform: translateY(-2px);
-        box-shadow:
-          0 10px 15px -3px rgba(0, 0, 0, 0.2),
-          0 4px 6px -2px rgba(0, 0, 0, 0.1);
-        border-color: rgba(249, 115, 22, 0.3);
-      }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      padding: 6rem 2rem;
+      background: radial-gradient(circle at center, rgba(62, 86, 243, 0.12) 0%, transparent 70%);
+      border-bottom: 1px solid var(--border);
+    }
 
-      .content-block {
-        margin-bottom: 1.5rem;
-      }
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 40%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
 
-      /* Tables */
-      .table-responsive {
-        overflow-x: auto;
-        margin-bottom: 1rem;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-      }
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-        background: rgba(0, 0, 0, 0.2);
-      }
+    /* Author Chips */
+    .author-chips {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.75rem;
+    }
 
-      th,
-      td {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid var(--border);
-      }
+    .author-chip {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.45rem 1.1rem;
+      border-radius: 30px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-      th {
-        background: rgba(255, 255, 255, 0.05);
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #cbd5e1;
-      }
+    .author-chip i {
+      color: #818cf8;
+      font-size: 0.85rem;
+    }
 
-      tr:last-child td {
-        border-bottom: none;
-      }
+    .author-chip:hover {
+      background: rgba(62, 86, 243, 0.08);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(62, 86, 243, 0.18);
+      color: #fff;
+    }
 
-      tr:hover td {
-        background: rgba(255, 255, 255, 0.02);
-      }
+    /* Cards (Glassmorphism) */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+    }
 
-      /* Badges & Tags */
-      .badge {
-        background: var(--primary);
-        color: white;
-        padding: 0.2rem 0.6rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.2),
+        0 4px 6px -2px rgba(0, 0, 0, 0.1);
+      border-color: rgba(41, 6, 243, 0.3);
+    }
 
-      .badge-pk {
-        background: #8b5cf6;
-      }
+    .content-block {
+      margin-bottom: 1.5rem;
+    }
 
-      .highlight-error {
-        color: var(--error);
-        font-weight: bold;
-        background: rgba(239, 68, 68, 0.1);
-        padding: 0.1rem 0.3rem;
-        border-radius: 4px;
-      }
+    /* Tables */
+    .table-responsive {
+      overflow-x: auto;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
 
-      .note {
-        font-size: 0.85rem;
-        font-style: italic;
-        opacity: 0.8;
-      }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      background: rgba(0, 0, 0, 0.2);
+    }
 
-      .tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-top: 1rem;
-      }
+    th,
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
 
-      .tag {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid var(--border);
-        padding: 0.4rem 0.8rem;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-family: "Fira Code", monospace;
-        transition: background 0.2s;
-      }
+    th {
+      background: rgba(255, 255, 255, 0.05);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #cbd5e1;
+    }
 
-      .tag:hover {
-        background: rgba(249, 115, 22, 0.2);
-        border-color: var(--primary);
-      }
+    tr:last-child td {
+      border-bottom: none;
+    }
 
-      /* Grids */
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Badges & Tags */
+    .badge {
+      background: var(--primary);
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .badge-pk {
+      background: rgba(139, 92, 246, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+    }
+
+    .badge-fk {
+      background: rgba(249, 115, 22, 0.2);
+      color: #fb923c;
+      border: 1px solid rgba(249, 115, 22, 0.4);
+    }
+
+    .badge-yes {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+
+    .badge-no {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+
+    .highlight-error {
+      color: var(--error);
+      font-weight: bold;
+      background: rgba(239, 68, 68, 0.1);
+      padding: 0.1rem 0.3rem;
+      border-radius: 4px;
+    }
+
+    .note {
+      font-size: 0.85rem;
+      font-style: italic;
+      opacity: 0.8;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-family: "Fira Code", monospace;
+      transition: background 0.2s;
+    }
+
+    .tag:hover {
+      background: rgba(249, 115, 22, 0.2);
+      border-color: var(--primary);
+    }
+
+    /* Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
       .grid-2 {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+        grid-template-columns: 1fr 1fr;
       }
+    }
 
-      @media (min-width: 768px) {
-        .grid-2 {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
+    .dependency-box {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: 8px;
+    }
 
-      .dependency-box {
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid var(--border);
-        padding: 1rem;
-        border-radius: 8px;
-      }
+    .dependency-box ul {
+      list-style-type: none;
+    }
 
-      .dependency-box ul {
-        list-style-type: none;
-      }
+    .dependency-box li {
+      padding: 0.25rem 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
 
-      .dependency-box li {
-        padding: 0.25rem 0;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-      }
+    .dependency-box li::before {
+      content: "→";
+      color: var(--primary);
+      margin-right: 0.5rem;
+    }
 
-      .dependency-box li::before {
-        content: "→";
-        color: var(--primary);
-        margin-right: 0.5rem;
-      }
+    .dependency-flow {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 3px solid var(--primary);
+      margin: 1rem 0;
+      font-size: 1.1rem;
+    }
 
-      .dependency-flow {
-        background: rgba(0, 0, 0, 0.3);
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 3px solid var(--primary);
-        margin: 1rem 0;
-        font-size: 1.1rem;
-      }
+    .dependency-list {
+      list-style-type: none;
+    }
 
-      .dependency-list {
-        list-style-type: none;
-      }
+    .dependency-list li {
+      margin-bottom: 0.5rem;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+    }
 
-      .dependency-list li {
-        margin-bottom: 0.5rem;
-        background: rgba(0, 0, 0, 0.2);
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-      }
+    .info-box {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-left: 3px solid var(--success);
+      padding: 1.5rem;
+      border-radius: 8px;
+    }
 
-      .info-box {
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        border-left: 3px solid var(--success);
-        padding: 1.5rem;
-        border-radius: 8px;
-      }
+    /* Code Block */
+    .code-container {
+      background: #000;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
 
-      /* Code Block */
-      .code-container {
-        background: #000;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        overflow: hidden;
-      }
+    pre {
+      margin: 0;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
 
-      pre {
-        margin: 0;
-        padding: 1.5rem;
-        overflow-x: auto;
-      }
+    code.language-sql {
+      color: #a6accd;
+    }
 
-      code.language-sql {
-        color: #a6accd;
-      }
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.6s ease-out forwards;
+      opacity: 0;
+    }
 
-      /* Animations */
-      .fade-in {
-        animation: fadeIn 0.6s ease-out forwards;
+    @keyframes fadeIn {
+      from {
         opacity: 0;
+        transform: translateY(10px);
       }
 
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .card:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .card:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+
+    .card:nth-child(5) {
+      animation-delay: 0.5s;
+    }
+
+    .card:nth-child(6) {
+      animation-delay: 0.6s;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    /* Navigation Bar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .navbar-links {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .navbar a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .navbar a:hover {
+      color: #fff;
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .navbar-logo-icon {
+      color: #818cf8;
+      font-size: 1.25rem;
+      text-decoration: none;
+      margin-right: auto;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .navbar-logo-icon:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--primary);
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+      color: #fff;
+    }
+
+    .navbar-brand {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff !important;
+      margin-right: 1rem;
+      letter-spacing: 0.03em;
+    }
+
+    .navbar-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      margin: 0 0.5rem;
+    }
+
+    /* ===== TABLE EXPAND MODAL ===== */
+    /* Hint icon shown on hoverable table wrappers */
+    .table-responsive {
+      cursor: zoom-in;
+      position: relative;
+    }
+
+    .table-responsive::after {
+      content: '\f424';
+      /* fa-expand */
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      top: 0.6rem;
+      right: 0.75rem;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.25);
+      pointer-events: none;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .table-responsive:hover::after {
+      color: rgba(129, 140, 248, 0.8);
+      transform: scale(1.15);
+    }
+
+    /* Full-page dimmed overlay */
+    #table-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: rgba(0, 0, 0, 0);
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+      transition:
+        background 0.35s ease,
+        backdrop-filter 0.35s ease;
+      cursor: zoom-out;
+    }
+
+    #table-overlay.active {
+      display: block;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Expanded table wrapper */
+    .table-responsive.expanded {
+      position: fixed;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%) scale(1);
+      z-index: 1000;
+      max-width: min(92vw, 1100px);
+      width: 92vw;
+      max-height: 85vh;
+      overflow: auto;
+      cursor: zoom-out;
+      border-radius: 12px;
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow:
+        0 0 0 1px rgba(99, 102, 241, 0.4),
+        0 25px 60px rgba(0, 0, 0, 0.7),
+        0 0 40px rgba(62, 86, 243, 0.15);
+      animation: tableZoomIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    /* Collapsing state – reverse the zoom animation */
+    .table-responsive.expanded.collapsing {
+      animation: tableZoomOut 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes tableZoomOut {
+      from {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
       }
 
-      .card:nth-child(1) {
-        animation-delay: 0.1s;
+      to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.82);
       }
-      .card:nth-child(2) {
-        animation-delay: 0.2s;
-      }
-      .card:nth-child(3) {
-        animation-delay: 0.3s;
-      }
-      .card:nth-child(4) {
-        animation-delay: 0.4s;
-      }
-      .card:nth-child(5) {
-        animation-delay: 0.5s;
-      }
-      .card:nth-child(6) {
-        animation-delay: 0.6s;
+    }
+
+    @keyframes tableZoomIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.82);
       }
 
-      footer {
-        text-align: center;
-        padding: 2rem;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        border-top: 1px solid var(--border);
-        margin-top: 2rem;
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
       }
-    </style>
-  </head>
-  <body>
-    <header class="hero">
-      <div class="hero-content">
-        <h1>MotoPartes Bazurto SAS</h1>
-        <p>Documentación Oficial: Normalización y Diseño de Base de Datos</p>
+    }
+
+    /* Close hint inside expanded table */
+    .table-responsive.expanded::after {
+      content: '\f00d';
+      /* fa-xmark */
+      font-size: 0.9rem;
+      color: rgba(248, 113, 113, 0.85);
+      right: 1rem;
+      top: 0.75rem;
+    }
+
+    /* Prevent body scroll when a table is expanded */
+    body.table-modal-open {
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="progress-bar"></div>
+  <nav class="navbar">
+    <a class="navbar-logo-icon" href="#hero" title="Inicio / Portada">
+      <i class="fas fa-database"></i>
+    </a>
+    <a class="navbar-brand" href="#hero">MotoPartes Bazurto S.A.S</a>
+    <div class="navbar-links">
+      <a href="#entregable1">Análisis de Problemas</a>
+      <a href="#entregable2">Primera Forma Normal</a>
+      <a href="#entregable3">Segunda Forma Normal</a>
+      <a href="#entregable4">Tercera Forma Normal</a>
+      <a href="#entregable5">Script SQL</a>
+      <a href="#entregable6">Diccionario de Datos</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="hero">
+    <div class="hero-content">
+      <div
+        style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); padding: 0.35rem 1rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; color: #a5b4fc; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
+        <i class="fas fa-database"></i> Ficha 3230489 · ADSO · SENA
       </div>
-    </header>
+      <h1>MotoPartes Bazurto S.A.S</h1>
+      <p>Documentación Oficial: Normalización y Diseño de Base de Datos</p>
 
-    <main class="container">
-      <!-- ENTREGABLE 1 -->
-      <section class="card fade-in">
-        <h2><span class="badge">Entregable 1</span> Análisis de Problemas</h2>
+      <div class="author-chips">
+        <span class="author-chip"><i class="fas fa-user-circle"></i> Juan Angel Narvaez Reyes</span>
+        <span class="author-chip"><i class="fas fa-user-circle"></i> Juan Marcos Hernandez Rodriguez</span>
+        <span class="author-chip"><i class="fas fa-user-circle"></i> Andrea Yineth Rivera</span>
+        <span class="author-chip"><i class="fas fa-user-circle"></i> Jesus Alcala Hernandez</span>
+      </div>
+    </div>
+  </header>
 
-        <div class="content-block">
-          <h3>a) Campos que violan la Primera Forma Normal (1FN)</h3>
-          <p>
-            Los campos <code>COD_REPUESTOS</code>,
-            <code>NOMBRES_REPUESTOS</code>, <code>CANT_REPUESTOS</code> y
-            <code>PRECIOS_UNIT</code> violan la 1FN porque contienen varios
-            valores dentro de una misma celda separados por comas. La Primera
-            Forma Normal exige que cada atributo tenga un único valor atómico.
-          </p>
+  <main class="container">
+    <!-- ENTREGABLE 1 -->
+    <section class="card fade-in" id="entregable1">
+      <h2><span class="badge">Entregable 1</span> <i class="fas fa-search"></i> Análisis de Problemas</h2>
 
-          <div class="table-responsive">
+      <div class="content-block">
+        <h3>a) Campos que violan la Primera Forma Normal (1FN)</h3>
+        <p>
+          Los campos <code>COD_REPUESTOS</code>,
+          <code>NOMBRES_REPUESTOS</code>, <code>CANT_REPUESTOS</code> y
+          <code>PRECIOS_UNIT</code> violan la 1FN porque contienen varios
+          valores dentro de una misma celda separados por comas. La Primera
+          Forma Normal exige que cada atributo tenga un único valor atómico.
+        </p>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID_VENTA</th>
+                <th>COD_REPUESTOS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>V-001</td>
+                <td><span class="highlight-error">RP-001, RP-002</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">
+          En una base de datos relacional cada fila debe contener un solo
+          valor por columna.
+        </p>
+      </div>
+
+      <div class="content-block">
+        <h3>b) Dependencias parciales</h3>
+        <p>
+          Al aplicar 1FN, la clave primaria será:
+          <strong>(ID_VENTA, COD_REPUESTO)</strong>
+        </p>
+        <p>
+          Existen dependencias parciales porque algunos atributos dependen
+          únicamente de una parte de la clave compuesta.
+        </p>
+
+        <div class="grid-2">
+          <div class="dependency-box">
+            <h4>Dependen de ID_VENTA:</h4>
+            <ul>
+              <li>FECHA</li>
+              <li>CEDULA_CLIENTE</li>
+              <li>COD_EMPLEADO</li>
+            </ul>
+          </div>
+          <div class="dependency-box">
+            <h4>Dependen de CEDULA_CLIENTE:</h4>
+            <ul>
+              <li>NOMBRE_CLIENTE</li>
+              <li>BARRIO_CLIENTE</li>
+              <li>CIUDAD_CLIENTE</li>
+            </ul>
+          </div>
+          <div class="dependency-box">
+            <h4>Dependen de COD_EMPLEADO:</h4>
+            <ul>
+              <li>NOMBRE_EMPLEADO</li>
+              <li>CARGO_EMPLEADO</li>
+              <li>SALARIO_EMPLEADO</li>
+            </ul>
+          </div>
+          <div class="dependency-box">
+            <h4>Dependen de COD_REPUESTO:</h4>
+            <ul>
+              <li>NOMBRE_REPUESTO</li>
+              <li>PRECIO_UNITARIO</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>c) Dependencia transitiva</h3>
+        <div class="dependency-flow">
+          <code>COD_EMPLEADO &rarr; CARGO_EMPLEADO &rarr; SALARIO_EMPLEADO</code>
+        </div>
+        <p>
+          El salario depende del cargo y no directamente del código del
+          empleado.
+        </p>
+      </div>
+
+      <div class="content-block">
+        <h3>d) Anomalía de actualización</h3>
+        <p>
+          Si cambia el salario de los Asesores Comerciales de $1.500.000 a
+          $1.700.000, habría que modificar todas las filas donde aparezcan
+          esos empleados. Si alguna fila no se actualiza, existirán datos
+          inconsistentes.
+        </p>
+      </div>
+    </section>
+
+    <!-- ENTREGABLE 2 -->
+    <section class="card fade-in" id="entregable2">
+      <h2>
+        <span class="badge">Entregable 2</span> <i class="fas fa-table-list"></i> Primera Forma Normal (1FN)
+      </h2>
+
+      <div class="content-block">
+        <h3>Tabla expandida (ejemplo)</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID_VENTA</th>
+                <th>FECHA</th>
+                <th>CLIENTE</th>
+                <th>EMPLEADO</th>
+                <th>COD_REPUESTO</th>
+                <th>CANTIDAD</th>
+                <th>PRECIO_UNIT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>V-001</td>
+                <td>2024-10-01</td>
+                <td>Pedro Acosta</td>
+                <td>E-01</td>
+                <td>RP-001</td>
+                <td>2</td>
+                <td>45000</td>
+              </tr>
+              <tr>
+                <td>V-001</td>
+                <td>2024-10-01</td>
+                <td>Pedro Acosta</td>
+                <td>E-01</td>
+                <td>RP-002</td>
+                <td>1</td>
+                <td>18000</td>
+              </tr>
+              <tr>
+                <td>V-002</td>
+                <td>2024-10-01</td>
+                <td>Carmen Reyes</td>
+                <td>E-01</td>
+                <td>RP-003</td>
+                <td>4</td>
+                <td>22000</td>
+              </tr>
+              <tr>
+                <td>V-003</td>
+                <td>2024-10-02</td>
+                <td>Julio Páez</td>
+                <td>E-02</td>
+                <td>RP-005</td>
+                <td>1</td>
+                <td>85000</td>
+              </tr>
+              <tr>
+                <td>V-003</td>
+                <td>2024-10-02</td>
+                <td>Julio Páez</td>
+                <td>E-02</td>
+                <td>RP-006</td>
+                <td>1</td>
+                <td>120000</td>
+              </tr>
+              <tr>
+                <td>V-003</td>
+                <td>2024-10-02</td>
+                <td>Julio Páez</td>
+                <td>E-02</td>
+                <td>RP-007</td>
+                <td>2</td>
+                <td>28000</td>
+              </tr>
+              <tr>
+                <td>V-004</td>
+                <td>2024-10-02</td>
+                <td>Pedro Acosta</td>
+                <td>E-03</td>
+                <td>RP-004</td>
+                <td>1</td>
+                <td>35000</td>
+              </tr>
+              <tr>
+                <td>V-005</td>
+                <td>2024-10-03</td>
+                <td>Sandra Villalba</td>
+                <td>E-01</td>
+                <td>RP-001</td>
+                <td>2</td>
+                <td>45000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block info-box">
+        <h4>Nueva clave primaria</h4>
+        <p><strong>PK(ID_VENTA, COD_REPUESTO)</strong></p>
+        <p>
+          <em>Justificación:</em> una venta puede contener varios repuestos y
+          un repuesto puede aparecer en muchas ventas.
+        </p>
+        <p>
+          <em>Cambios realizados:</em> Se eliminaron los campos multivaluados
+          y cada repuesto vendido pasó a ocupar una fila independiente.
+        </p>
+      </div>
+    </section>
+
+    <!-- ENTREGABLE 3 -->
+    <section class="card fade-in" id="entregable3">
+      <h2>
+        <span class="badge">Entregable 3</span> <i class="fas fa-sitemap"></i> Segunda Forma Normal (2FN)
+      </h2>
+
+      <div class="content-block">
+        <h3>a) Dependencias parciales encontradas</h3>
+        <p>Tomando como clave primaria compuesta <strong>(ID_VENTA, COD_REPUESTO)</strong>, se identifican las
+          siguientes dependencias parciales:</p>
+        <div class="grid-2">
+          <div class="dependency-box">
+            <h4>Dependencias de ID_VENTA:</h4>
+            <ul class="dependency-list">
+              <li><code>ID_VENTA &rarr; FECHA</code></li>
+              <li><code>ID_VENTA &rarr; CEDULA_CLIENTE</code></li>
+              <li><code>ID_VENTA &rarr; COD_EMPLEADO</code></li>
+            </ul>
+            <h4 style="margin-top: 1rem;">Transitividades de Clientes:</h4>
+            <ul class="dependency-list">
+              <li><code>CEDULA_CLIENTE &rarr; NOMBRE_CLIENTE</code></li>
+              <li><code>CEDULA_CLIENTE &rarr; BARRIO_CLIENTE</code></li>
+              <li><code>CEDULA_CLIENTE &rarr; CIUDAD_CLIENTE</code></li>
+            </ul>
+          </div>
+          <div class="dependency-box">
+            <h4>Transitividades de Empleados:</h4>
+            <ul class="dependency-list">
+              <li><code>COD_EMPLEADO &rarr; NOMBRE_EMPLEADO</code></li>
+              <li><code>COD_EMPLEADO &rarr; CARGO_EMPLEADO</code></li>
+              <li><code>COD_EMPLEADO &rarr; SALARIO_EMPLEADO</code></li>
+            </ul>
+            <h4 style="margin-top: 1rem;">Dependencias de COD_REPUESTO:</h4>
+            <ul class="dependency-list">
+              <li><code>COD_REPUESTO &rarr; NOMBRE_REPUESTO</code></li>
+              <li><code>COD_REPUESTO &rarr; PRECIO_UNITARIO</code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>b) Esquemas de las tablas resultantes (2FN)</h3>
+        <p>A continuación se detallan los campos, tipos y claves de las tablas estructuradas para eliminar las
+          dependencias parciales:</p>
+
+        <div class="grid-2">
+          <div>
+            <h4>CLIENTES</h4>
+            <div class="table-responsive" style="margin-bottom: 1rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Campo</th>
+                    <th>Tipo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>cedula_cliente</code> (PK)</td>
+                    <td>VARCHAR(20)</td>
+                  </tr>
+                  <tr>
+                    <td><code>nombre_cliente</code></td>
+                    <td>VARCHAR(100)</td>
+                  </tr>
+                  <tr>
+                    <td><code>barrio_cliente</code></td>
+                    <td>VARCHAR(100)</td>
+                  </tr>
+                  <tr>
+                    <td><code>ciudad_cliente</code></td>
+                    <td>VARCHAR(100)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h4>EMPLEADOS</h4>
+            <div class="table-responsive" style="margin-bottom: 1rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Campo</th>
+                    <th>Tipo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>cod_empleado</code> (PK)</td>
+                    <td>VARCHAR(10)</td>
+                  </tr>
+                  <tr>
+                    <td><code>nombre_empleado</code></td>
+                    <td>VARCHAR(100)</td>
+                  </tr>
+                  <tr>
+                    <td><code>cargo_empleado</code></td>
+                    <td>VARCHAR(100)</td>
+                  </tr>
+                  <tr>
+                    <td><code>salario_empleado</code></td>
+                    <td>NUMERIC(10,2)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h4>REPUESTOS</h4>
+            <div class="table-responsive" style="margin-bottom: 1rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Campo</th>
+                    <th>Tipo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>cod_repuesto</code> (PK)</td>
+                    <td>VARCHAR(10)</td>
+                  </tr>
+                  <tr>
+                    <td><code>nombre_repuesto</code></td>
+                    <td>VARCHAR(100)</td>
+                  </tr>
+                  <tr>
+                    <td><code>precio_unitario</code></td>
+                    <td>NUMERIC(10,2)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h4>VENTAS</h4>
+            <div class="table-responsive" style="margin-bottom: 1rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Campo</th>
+                    <th>Tipo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>id_venta</code> (PK)</td>
+                    <td>VARCHAR(10)</td>
+                  </tr>
+                  <tr>
+                    <td><code>fecha</code></td>
+                    <td>DATE</td>
+                  </tr>
+                  <tr>
+                    <td><code>cedula_cliente</code> (FK)</td>
+                    <td>VARCHAR(20)</td>
+                  </tr>
+                  <tr>
+                    <td><code>cod_empleado</code> (FK)</td>
+                    <td>VARCHAR(10)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+          <h4>DETALLE_VENTAS</h4>
+          <div class="table-responsive" style="max-width: 500px;">
             <table>
               <thead>
                 <tr>
-                  <th>ID_VENTA</th>
-                  <th>COD_REPUESTOS</th>
+                  <th>Campo</th>
+                  <th>Tipo</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>V-001</td>
-                  <td><span class="highlight-error">RP-001, RP-002</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="note">
-            En una base de datos relacional cada fila debe contener un solo
-            valor por columna.
-          </p>
-        </div>
-
-        <div class="content-block">
-          <h3>b) Dependencias parciales</h3>
-          <p>
-            Al aplicar 1FN, la clave primaria será:
-            <strong>(ID_VENTA, COD_REPUESTO)</strong>
-          </p>
-          <p>
-            Existen dependencias parciales porque algunos atributos dependen
-            únicamente de una parte de la clave compuesta.
-          </p>
-
-          <div class="grid-2">
-            <div class="dependency-box">
-              <h4>Dependen de ID_VENTA:</h4>
-              <ul>
-                <li>FECHA</li>
-                <li>CEDULA_CLIENTE</li>
-                <li>COD_EMPLEADO</li>
-              </ul>
-            </div>
-            <div class="dependency-box">
-              <h4>Dependen de CEDULA_CLIENTE:</h4>
-              <ul>
-                <li>NOMBRE_CLIENTE</li>
-                <li>BARRIO_CLIENTE</li>
-                <li>CIUDAD_CLIENTE</li>
-              </ul>
-            </div>
-            <div class="dependency-box">
-              <h4>Dependen de COD_EMPLEADO:</h4>
-              <ul>
-                <li>NOMBRE_EMPLEADO</li>
-                <li>CARGO_EMPLEADO</li>
-                <li>SALARIO_EMPLEADO</li>
-              </ul>
-            </div>
-            <div class="dependency-box">
-              <h4>Dependen de COD_REPUESTO:</h4>
-              <ul>
-                <li>NOMBRE_REPUESTO</li>
-                <li>PRECIO_UNITARIO</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="content-block">
-          <h3>c) Dependencia transitiva</h3>
-          <div class="dependency-flow">
-            <code
-              >COD_EMPLEADO &rarr; CARGO_EMPLEADO &rarr; SALARIO_EMPLEADO</code
-            >
-          </div>
-          <p>
-            El salario depende del cargo y no directamente del código del
-            empleado.
-          </p>
-        </div>
-
-        <div class="content-block">
-          <h3>d) Anomalía de actualización</h3>
-          <p>
-            Si cambia el salario de los Asesores Comerciales de $1.500.000 a
-            $1.700.000, habría que modificar todas las filas donde aparezcan
-            esos empleados. Si alguna fila no se actualiza, existirán datos
-            inconsistentes.
-          </p>
-        </div>
-      </section>
-
-      <!-- ENTREGABLE 2 -->
-      <section class="card fade-in">
-        <h2>
-          <span class="badge">Entregable 2</span> Primera Forma Normal (1FN)
-        </h2>
-
-        <div class="content-block">
-          <h3>Tabla expandida (ejemplo)</h3>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID_VENTA</th>
-                  <th>FECHA</th>
-                  <th>CLIENTE</th>
-                  <th>EMPLEADO</th>
-                  <th>COD_REPUESTO</th>
-                  <th>CANTIDAD</th>
-                  <th>PRECIO_UNIT</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>V-001</td>
-                  <td>2024-10-01</td>
-                  <td>Pedro Acosta</td>
-                  <td>E-01</td>
-                  <td>RP-001</td>
-                  <td>2</td>
-                  <td>45000</td>
+                  <td><code>id_venta</code> (PK, FK)</td>
+                  <td>VARCHAR(10)</td>
                 </tr>
                 <tr>
-                  <td>V-001</td>
-                  <td>2024-10-01</td>
-                  <td>Pedro Acosta</td>
-                  <td>E-01</td>
-                  <td>RP-002</td>
-                  <td>1</td>
-                  <td>18000</td>
+                  <td><code>cod_repuesto</code> (PK, FK)</td>
+                  <td>VARCHAR(10)</td>
                 </tr>
                 <tr>
-                  <td>V-002</td>
-                  <td>2024-10-01</td>
-                  <td>Carmen Reyes</td>
-                  <td>E-01</td>
-                  <td>RP-003</td>
-                  <td>4</td>
-                  <td>22000</td>
-                </tr>
-                <tr>
-                  <td>V-003</td>
-                  <td>2024-10-02</td>
-                  <td>Julio Páez</td>
-                  <td>E-02</td>
-                  <td>RP-005</td>
-                  <td>1</td>
-                  <td>85000</td>
-                </tr>
-                <tr>
-                  <td>V-003</td>
-                  <td>2024-10-02</td>
-                  <td>Julio Páez</td>
-                  <td>E-02</td>
-                  <td>RP-006</td>
-                  <td>1</td>
-                  <td>120000</td>
-                </tr>
-                <tr>
-                  <td>V-003</td>
-                  <td>2024-10-02</td>
-                  <td>Julio Páez</td>
-                  <td>E-02</td>
-                  <td>RP-007</td>
-                  <td>2</td>
-                  <td>28000</td>
-                </tr>
-                <tr>
-                  <td>V-004</td>
-                  <td>2024-10-02</td>
-                  <td>Pedro Acosta</td>
-                  <td>E-03</td>
-                  <td>RP-004</td>
-                  <td>1</td>
-                  <td>35000</td>
-                </tr>
-                <tr>
-                  <td>V-005</td>
-                  <td>2024-10-03</td>
-                  <td>Sandra Villalba</td>
-                  <td>E-01</td>
-                  <td>RP-001</td>
-                  <td>2</td>
-                  <td>45000</td>
+                  <td><code>cantidad</code></td>
+                  <td>INTEGER</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
+      </div>
 
-        <div class="content-block info-box">
-          <h4>Nueva clave primaria</h4>
-          <p><strong>PK(ID_VENTA, COD_REPUESTO)</strong></p>
-          <p>
-            <em>Justificación:</em> una venta puede contener varios repuestos y
-            un repuesto puede aparecer en muchas ventas.
-          </p>
-          <p>
-            <em>Cambios realizados:</em> Se eliminaron los campos multivaluados
-            y cada repuesto vendido pasó a ocupar una fila independiente.
-          </p>
-        </div>
-      </section>
+      <div class="content-block">
+        <h3>c) Tablas con datos de ejemplo (2FN)</h3>
+        <p>Muestra del contenido de las tablas con un mínimo de 3 filas cada una, reflejando el caso práctico de la
+          guía:</p>
 
-      <!-- ENTREGABLE 3 -->
-      <section class="card fade-in">
-        <h2>
-          <span class="badge">Entregable 3</span> Segunda Forma Normal (2FN)
-        </h2>
-
-        <div class="content-block">
-          <h3>Dependencias parciales resueltas</h3>
-          <ul class="dependency-list">
-            <li>
-              <code>ID_VENTA &rarr; FECHA, CEDULA_CLIENTE, COD_EMPLEADO</code>
-            </li>
-            <li>
-              <code
-                >CEDULA_CLIENTE &rarr; NOMBRE_CLIENTE, BARRIO_CLIENTE,
-                CIUDAD_CLIENTE</code
-              >
-            </li>
-            <li>
-              <code
-                >COD_EMPLEADO &rarr; NOMBRE_EMPLEADO, CARGO_EMPLEADO,
-                SALARIO_EMPLEADO</code
-              >
-            </li>
-            <li>
-              <code>COD_REPUESTO &rarr; NOMBRE_REPUESTO, PRECIO_UNITARIO</code>
-            </li>
-          </ul>
+        <h4>CLIENTES</h4>
+        <div class="table-responsive" style="margin-bottom: 1.5rem;">
+          <table>
+            <thead>
+              <tr>
+                <th>Cédula</th>
+                <th>Nombre</th>
+                <th>Barrio</th>
+                <th>Ciudad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>10456789</td>
+                <td>Juan Pérez</td>
+                <td>Olaya Herrera</td>
+                <td>Cartagena</td>
+              </tr>
+              <tr>
+                <td>10876543</td>
+                <td>Ana Torres</td>
+                <td>El Pozón</td>
+                <td>Cartagena</td>
+              </tr>
+              <tr>
+                <td>10987654</td>
+                <td>Luis Gómez</td>
+                <td>San Fernando</td>
+                <td>Cartagena</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div class="content-block">
-          <h3>Tablas resultantes</h3>
+        <h4>EMPLEADOS</h4>
+        <div class="table-responsive" style="margin-bottom: 1.5rem;">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Cargo</th>
+                <th>Salario</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>E-01</td>
+                <td>Carlos Ruiz</td>
+                <td>Asesor Comercial</td>
+                <td>1500000</td>
+              </tr>
+              <tr>
+                <td>E-02</td>
+                <td>María Díaz</td>
+                <td>Asesor Comercial</td>
+                <td>1500000</td>
+              </tr>
+              <tr>
+                <td>E-03</td>
+                <td>Pedro López</td>
+                <td>Supervisor</td>
+                <td>2000000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <h4>CLIENTES</h4>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>CEDULA_CLIENTE (PK)</th>
-                  <th>NOMBRE_CLIENTE</th>
-                  <th>BARRIO_CLIENTE</th>
-                  <th>CIUDAD_CLIENTE</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>100123456</td>
-                  <td>Pedro Acosta Dávila</td>
-                  <td>Manga</td>
-                  <td>Cartagena</td>
-                </tr>
-                <tr>
-                  <td>200234567</td>
-                  <td>Carmen Reyes Polo</td>
-                  <td>Torices</td>
-                  <td>Cartagena</td>
-                </tr>
-                <tr>
-                  <td>300345678</td>
-                  <td>Julio Páez Hernández</td>
-                  <td>Olaya</td>
-                  <td>Cartagena</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <h4>REPUESTOS</h4>
+        <div class="table-responsive" style="margin-bottom: 1.5rem;">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>R-01</td>
+                <td>Bujía NGK</td>
+                <td>15000</td>
+              </tr>
+              <tr>
+                <td>R-02</td>
+                <td>Cadena 428H</td>
+                <td>45000</td>
+              </tr>
+              <tr>
+                <td>R-03</td>
+                <td>Pastillas de freno</td>
+                <td>35000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <h4>EMPLEADOS</h4>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>COD_EMPLEADO (PK)</th>
-                  <th>NOMBRE_EMPLEADO</th>
-                  <th>CARGO_EMPLEADO</th>
-                  <th>SALARIO_EMPLEADO</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>E-01</td>
-                  <td>Rosmery Causado Gómez</td>
-                  <td>Asesor Comercial</td>
-                  <td>1500000</td>
-                </tr>
-                <tr>
-                  <td>E-02</td>
-                  <td>Andrés Parra Herazo</td>
-                  <td>Asesor Comercial</td>
-                  <td>1500000</td>
-                </tr>
-                <tr>
-                  <td>E-03</td>
-                  <td>Beatriz Herazo Turizo</td>
-                  <td>Supervisora de Ventas</td>
-                  <td>2800000</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <h4>REPUESTOS</h4>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>COD_REPUESTO (PK)</th>
-                  <th>NOMBRE_REPUESTO</th>
-                  <th>PRECIO_UNITARIO</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>RP-001</td>
-                  <td>Pastillas freno delanteras</td>
-                  <td>45000</td>
-                </tr>
-                <tr>
-                  <td>RP-002</td>
-                  <td>Filtro de aceite</td>
-                  <td>18000</td>
-                </tr>
-                <tr>
-                  <td>RP-003</td>
-                  <td>Bujía NGK C7HSA</td>
-                  <td>22000</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="grid-2">
-            <div>
-              <h4>VENTAS</h4>
-              <div class="table-responsive">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>ID_VENTA (PK)</th>
-                      <th>FECHA</th>
-                      <th>CEDULA_CLIENTE (FK)</th>
-                      <th>COD_EMPLEADO (FK)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>V-001</td>
-                      <td>2024-10-01</td>
-                      <td>100123456</td>
-                      <td>E-01</td>
-                    </tr>
-                    <tr>
-                      <td>V-002</td>
-                      <td>2024-10-01</td>
-                      <td>200234567</td>
-                      <td>E-01</td>
-                    </tr>
-                    <tr>
-                      <td>V-003</td>
-                      <td>2024-10-02</td>
-                      <td>300345678</td>
-                      <td>E-02</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div>
-              <h4>DETALLE_VENTA</h4>
-              <div class="table-responsive">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>ID_VENTA (FK)</th>
-                      <th>COD_REPUESTO (FK)</th>
-                      <th>CANTIDAD</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>V-001</td>
-                      <td>RP-001</td>
-                      <td>2</td>
-                    </tr>
-                    <tr>
-                      <td>V-001</td>
-                      <td>RP-002</td>
-                      <td>1</td>
-                    </tr>
-                    <tr>
-                      <td>V-002</td>
-                      <td>RP-003</td>
-                      <td>4</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="note text-center">PK = (ID_VENTA, COD_REPUESTO)</p>
+        <div class="grid-2">
+          <div>
+            <h4>VENTAS</h4>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID Venta</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Empleado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>V-001</td>
+                    <td>2024-10-01</td>
+                    <td>10456789</td>
+                    <td>E-01</td>
+                  </tr>
+                  <tr>
+                    <td>V-002</td>
+                    <td>2024-10-01</td>
+                    <td>10876543</td>
+                    <td>E-02</td>
+                  </tr>
+                  <tr>
+                    <td>V-003</td>
+                    <td>2024-10-02</td>
+                    <td>10987654</td>
+                    <td>E-03</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- ENTREGABLE 4 -->
-      <section class="card fade-in">
-        <h2>
-          <span class="badge">Entregable 4</span> Tercera Forma Normal (3FN)
-        </h2>
-
-        <div class="content-block">
-          <h3>Dependencia transitiva resuelta</h3>
-          <div class="dependency-flow">
-            <code
-              >COD_EMPLEADO &rarr; CARGO_EMPLEADO &rarr; SALARIO_EMPLEADO</code
-            >
+          <div>
+            <h4>DETALLE_VENTA</h4>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Venta</th>
+                    <th>Repuesto</th>
+                    <th>Cantidad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>V-001</td>
+                    <td>R-01</td>
+                    <td>2</td>
+                  </tr>
+                  <tr>
+                    <td>V-001</td>
+                    <td>R-02</td>
+                    <td>1</td>
+                  </tr>
+                  <tr>
+                    <td>V-002</td>
+                    <td>R-03</td>
+                    <td>2</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="note text-center" style="margin-top: 0.5rem;">PK = (id_venta, cod_repuesto)</p>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="content-block">
-          <h3>Nueva tabla creada y ajustada</h3>
+    <!-- ENTREGABLE 4 -->
+    <section class="card fade-in" id="entregable4">
+      <h2>
+        <span class="badge">Entregable 4</span> <i class="fas fa-network-wired"></i> Tercera Forma Normal (3FN)
+      </h2>
 
-          <div class="grid-2">
-            <div>
-              <h4>CARGOS</h4>
-              <div class="table-responsive">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>COD_CARGO (PK)</th>
-                      <th>NOMBRE_CARGO</th>
-                      <th>SALARIO</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>C01</td>
-                      <td>Asesor Comercial</td>
-                      <td>1500000</td>
-                    </tr>
-                    <tr>
-                      <td>C02</td>
-                      <td>Supervisora de Ventas</td>
-                      <td>2800000</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+      <div class="content-block">
+        <h3>Dependencia transitiva resuelta</h3>
+        <div class="dependency-flow">
+          <code>COD_EMPLEADO &rarr; CARGO_EMPLEADO &rarr; SALARIO_EMPLEADO</code>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Nueva tabla creada y ajustada</h3>
+
+        <div class="grid-2">
+          <div>
+            <h4>CARGOS</h4>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>COD_CARGO (PK)</th>
+                    <th>NOMBRE_CARGO</th>
+                    <th>SALARIO</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>C01</td>
+                    <td>Asesor Comercial</td>
+                    <td>1500000</td>
+                  </tr>
+                  <tr>
+                    <td>C02</td>
+                    <td>Supervisora de Ventas</td>
+                    <td>2800000</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div>
-              <h4>EMPLEADOS (Actualizada)</h4>
-              <div class="table-responsive">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>COD_EMPLEADO (PK)</th>
-                      <th>NOMBRE_EMPLEADO</th>
-                      <th>COD_CARGO (FK)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>E-01</td>
-                      <td>Rosmery Causado Gómez</td>
-                      <td>C01</td>
-                    </tr>
-                    <tr>
-                      <td>E-02</td>
-                      <td>Andrés Parra Herazo</td>
-                      <td>C01</td>
-                    </tr>
-                    <tr>
-                      <td>E-03</td>
-                      <td>Beatriz Herazo Turizo</td>
-                      <td>C02</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+          </div>
+          <div>
+            <h4>EMPLEADOS (Actualizada)</h4>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>COD_EMPLEADO (PK)</th>
+                    <th>NOMBRE_EMPLEADO</th>
+                    <th>COD_CARGO (FK)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>E-01</td>
+                    <td>Rosmery Causado Gómez</td>
+                    <td>C01</td>
+                  </tr>
+                  <tr>
+                    <td>E-02</td>
+                    <td>Andrés Parra Herazo</td>
+                    <td>C01</td>
+                  </tr>
+                  <tr>
+                    <td>E-03</td>
+                    <td>Beatriz Herazo Turizo</td>
+                    <td>C02</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="content-block info-box">
-          <h4>Modelo Final Resultante</h4>
-          <div class="tags">
-            <span class="tag">CLIENTES</span>
-            <span class="tag">CARGOS</span>
-            <span class="tag">EMPLEADOS</span>
-            <span class="tag">REPUESTOS</span>
-            <span class="tag">VENTAS</span>
-            <span class="tag">DETALLE_VENTA</span>
-          </div>
+      <div class="content-block info-box">
+        <h4>Modelo Final Resultante</h4>
+        <div class="tags">
+          <span class="tag">CLIENTES</span>
+          <span class="tag">CARGOS</span>
+          <span class="tag">EMPLEADOS</span>
+          <span class="tag">REPUESTOS</span>
+          <span class="tag">VENTAS</span>
+          <span class="tag">DETALLE_VENTA</span>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- ENTREGABLE 5 -->
-      <section class="card fade-in">
-        <h2><span class="badge">Entregable 5</span> Script SQL PostgreSQL</h2>
-        <div class="code-container">
-          <pre><code class="language-sql">-- Tabla de clientes
+    <!-- ENTREGABLE 5 -->
+    <section class="card fade-in" id="entregable5">
+      <h2><span class="badge">Entregable 5</span> <i class="fas fa-file-code"></i> Script SQL PostgreSQL</h2>
+      <div class="code-container">
+        <pre><code class="language-sql">-- Tabla de clientes
 CREATE TABLE clientes (
     cedula_cliente VARCHAR(20) PRIMARY KEY,
     nombre_cliente VARCHAR(100) NOT NULL,
@@ -957,76 +1430,481 @@ CREATE TABLE detalle_venta (
         REFERENCES repuestos(cod_repuesto)
         ON DELETE RESTRICT
 );</code></pre>
-        </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- ENTREGABLE 6 -->
-      <section class="card fade-in">
-        <h2><span class="badge">Entregable 6</span> Diccionario de Datos</h2>
-        <p>Ejemplo para tabla <strong>CLIENTES</strong>:</p>
-        <div class="table-responsive">
-          <table class="dictionary-table">
-            <thead>
-              <tr>
-                <th>Campo</th>
-                <th>Tipo</th>
-                <th>Tamaño</th>
-                <th>Nulo</th>
-                <th>Clave</th>
-                <th>FK</th>
-                <th>CHECK</th>
-                <th>Descripción</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><code>cedula_cliente</code></td>
-                <td>VARCHAR</td>
-                <td>20</td>
-                <td>NO</td>
-                <td><span class="badge badge-pk">PK</span></td>
-                <td>—</td>
-                <td>—</td>
-                <td>Identificación del cliente</td>
-              </tr>
-              <tr>
-                <td><code>nombre_cliente</code></td>
-                <td>VARCHAR</td>
-                <td>100</td>
-                <td>NO</td>
-                <td>—</td>
-                <td>—</td>
-                <td>—</td>
-                <td>Nombre completo del cliente</td>
-              </tr>
-              <tr>
-                <td><code>barrio_cliente</code></td>
-                <td>VARCHAR</td>
-                <td>50</td>
-                <td>NO</td>
-                <td>—</td>
-                <td>—</td>
-                <td>—</td>
-                <td>Barrio de residencia</td>
-              </tr>
-              <tr>
-                <td><code>ciudad_cliente</code></td>
-                <td>VARCHAR</td>
-                <td>50</td>
-                <td>NO</td>
-                <td>—</td>
-                <td>—</td>
-                <td>—</td>
-                <td>Ciudad de residencia</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+    <!-- ENTREGABLE 6 -->
+    <section class="card fade-in" id="entregable6">
+      <h2><span class="badge">Entregable 6</span> <i class="fas fa-book-open"></i> Diccionario de Datos</h2>
+      <p>A continuación se presenta la documentación técnica detallada para cada una de las tablas del modelo relacional
+        final en 3FN.</p>
 
-    <footer>
-      <p>&copy; 2024 MotoPartes Bazurto SAS. Generado automáticamente.</p>
-    </footer>
-  </body>
+      <!-- TABLA: clientes -->
+      <h3 style="margin-top: 2rem; border-left: 3px solid var(--primary); padding-left: 0.5rem;">Tabla: clientes</h3>
+      <p>Almacena la información de contacto y ubicación de los clientes de MotoPartes Bazurto S.A.S.</p>
+      <div class="table-responsive" style="margin-bottom: 2rem;">
+        <table class="dictionary-table">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th>Tamaño</th>
+              <th>Nulo</th>
+              <th>Clave</th>
+              <th>FK → Tabla</th>
+              <th>CHECK / Default</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>cedula_cliente</code></td>
+              <td>VARCHAR</td>
+              <td>20</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td><span class="badge badge-pk">PK</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>Documento de identidad del cliente (Clave Primaria).</td>
+            </tr>
+            <tr>
+              <td><code>nombre_cliente</code></td>
+              <td>VARCHAR</td>
+              <td>100</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>Nombre completo del cliente.</td>
+            </tr>
+            <tr>
+              <td><code>barrio_cliente</code></td>
+              <td>VARCHAR</td>
+              <td>50</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>Barrio de residencia del cliente.</td>
+            </tr>
+            <tr>
+              <td><code>ciudad_cliente</code></td>
+              <td>VARCHAR</td>
+              <td>50</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>Ciudad de residencia del cliente.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TABLA: cargos -->
+      <h3 style="margin-top: 2rem; border-left: 3px solid var(--primary); padding-left: 0.5rem;">Tabla: cargos</h3>
+      <p>Registra los diferentes puestos de trabajo en la empresa y el salario base asociado a cada uno.</p>
+      <div class="table-responsive" style="margin-bottom: 2rem;">
+        <table class="dictionary-table">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th>Tamaño</th>
+              <th>Nulo</th>
+              <th>Clave</th>
+              <th>FK → Tabla</th>
+              <th>CHECK / Default</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>cod_cargo</code></td>
+              <td>VARCHAR</td>
+              <td>5</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td><span class="badge badge-pk">PK</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>Código identificador del cargo (Clave Primaria).</td>
+            </tr>
+            <tr>
+              <td><code>nombre_cargo</code></td>
+              <td>VARCHAR</td>
+              <td>50</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>Nombre o descripción del cargo laboral.</td>
+            </tr>
+            <tr>
+              <td><code>salario</code></td>
+              <td>NUMERIC</td>
+              <td>10,2</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td><code>CHECK (salario > 0)</code></td>
+              <td>Salario mensual asignado al cargo. Debe ser mayor a cero.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TABLA: empleados -->
+      <h3 style="margin-top: 2rem; border-left: 3px solid var(--primary); padding-left: 0.5rem;">Tabla: empleados</h3>
+      <p>Contiene los datos del personal de ventas y administración de MotoPartes Bazurto S.A.S.</p>
+      <div class="table-responsive" style="margin-bottom: 2rem;">
+        <table class="dictionary-table">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th>Tamaño</th>
+              <th>Nulo</th>
+              <th>Clave</th>
+              <th>FK → Tabla</th>
+              <th>CHECK / Default</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>cod_empleado</code></td>
+              <td>VARCHAR</td>
+              <td>10</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td><span class="badge badge-pk">PK</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>Código único del empleado (Clave Primaria).</td>
+            </tr>
+            <tr>
+              <td><code>nombre_empleado</code></td>
+              <td>VARCHAR</td>
+              <td>100</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>Nombre completo del empleado.</td>
+            </tr>
+            <tr>
+              <td><code>cod_cargo</code></td>
+              <td>VARCHAR</td>
+              <td>5</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td><span class="badge badge-fk">FK → cargos(cod_cargo)</span></td>
+              <td>—</td>
+              <td>Referencia al cargo que ocupa el empleado (Clave Foránea).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TABLA: repuestos -->
+      <h3 style="margin-top: 2rem; border-left: 3px solid var(--primary); padding-left: 0.5rem;">Tabla: repuestos</h3>
+      <p>Catálogo de piezas y componentes disponibles para la venta.</p>
+      <div class="table-responsive" style="margin-bottom: 2rem;">
+        <table class="dictionary-table">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th>Tamaño</th>
+              <th>Nulo</th>
+              <th>Clave</th>
+              <th>FK → Tabla</th>
+              <th>CHECK / Default</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>cod_repuesto</code></td>
+              <td>VARCHAR</td>
+              <td>10</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td><span class="badge badge-pk">PK</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>Código único del repuesto (Clave Primaria).</td>
+            </tr>
+            <tr>
+              <td><code>nombre_repuesto</code></td>
+              <td>VARCHAR</td>
+              <td>100</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>Nombre o descripción del repuesto.</td>
+            </tr>
+            <tr>
+              <td><code>categoria</code></td>
+              <td>VARCHAR</td>
+              <td>50</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>Categoría o sección a la que pertenece el repuesto.</td>
+            </tr>
+            <tr>
+              <td><code>precio_unitario</code></td>
+              <td>NUMERIC</td>
+              <td>10,2</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td><code>CHECK (precio_unitario > 0)</code></td>
+              <td>Precio de venta por unidad del repuesto. Debe ser mayor a cero.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TABLA: ventas -->
+      <h3 style="margin-top: 2rem; border-left: 3px solid var(--primary); padding-left: 0.5rem;">Tabla: ventas</h3>
+      <p>Registra las transacciones de ventas generales, vinculando al cliente y al vendedor.</p>
+      <div class="table-responsive" style="margin-bottom: 2rem;">
+        <table class="dictionary-table">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th>Tamaño</th>
+              <th>Nulo</th>
+              <th>Clave</th>
+              <th>FK → Tabla</th>
+              <th>CHECK / Default</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id_venta</code></td>
+              <td>VARCHAR</td>
+              <td>10</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td><span class="badge badge-pk">PK</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>Identificador único de la transacción (Clave Primaria).</td>
+            </tr>
+            <tr>
+              <td><code>fecha</code></td>
+              <td>DATE</td>
+              <td>—</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>Fecha en que se efectuó la venta.</td>
+            </tr>
+            <tr>
+              <td><code>cedula_cliente</code></td>
+              <td>VARCHAR</td>
+              <td>20</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td><span class="badge badge-fk">FK → clientes(cedula_cliente)</span></td>
+              <td>—</td>
+              <td>Referencia al cliente que realiza la compra (Clave Foránea).</td>
+            </tr>
+            <tr>
+              <td><code>cod_empleado</code></td>
+              <td>VARCHAR</td>
+              <td>10</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td><span class="badge badge-fk">FK → empleados(cod_empleado)</span></td>
+              <td>—</td>
+              <td>Referencia al empleado que procesó la venta (Clave Foránea).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TABLA: detalle_venta -->
+      <h3 style="margin-top: 2rem; border-left: 3px solid var(--primary); padding-left: 0.5rem;">Tabla: detalle_venta
+      </h3>
+      <p>Almacena la relación de repuestos incluidos en cada venta, con sus respectivas cantidades.</p>
+      <div class="table-responsive" style="margin-bottom: 2rem;">
+        <table class="dictionary-table">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th>Tamaño</th>
+              <th>Nulo</th>
+              <th>Clave</th>
+              <th>FK → Tabla</th>
+              <th>CHECK / Default</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id_venta</code></td>
+              <td>VARCHAR</td>
+              <td>10</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td><span class="badge badge-pk">PK</span></td>
+              <td><span class="badge badge-fk">FK → ventas(id_venta)</span></td>
+              <td>—</td>
+              <td>Parte de la clave primaria. Referencia a la venta (Clave Foránea).</td>
+            </tr>
+            <tr>
+              <td><code>cod_repuesto</code></td>
+              <td>VARCHAR</td>
+              <td>10</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td><span class="badge badge-pk">PK</span></td>
+              <td><span class="badge badge-fk">FK → repuestos(cod_repuesto)</span></td>
+              <td>—</td>
+              <td>Parte de la clave primaria. Referencia al repuesto vendido (Clave Foránea).</td>
+            </tr>
+            <tr>
+              <td><code>cantidad</code></td>
+              <td>INTEGER</td>
+              <td>—</td>
+              <td><span class="badge badge-no">NO</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td><code>CHECK (cantidad > 0)</code></td>
+              <td>Cantidad de unidades vendidas del repuesto. Debe ser mayor a cero.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MotoPartes Bazurto S.A.S.</p>
+  </footer>
+
+  <script>
+    // Barra de progreso de scroll
+    window.addEventListener('scroll', () => {
+      const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+      document.getElementById('progress-bar').style.width = pct + '%';
+    });
+
+    // Enlace activo en el nav según la sección visible (ScrollSpy)
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.navbar-links a');
+
+    function scrollSpy() {
+      let currentSectionId = '';
+      const scrollPosition = window.scrollY + 120; // Offset para compensar el navbar sticky
+
+      // Si llegamos al final de la página, activar el último entregable por defecto
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 15) {
+        currentSectionId = 'entregable6';
+      } else {
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.offsetHeight;
+          if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+            currentSectionId = section.getAttribute('id');
+          }
+        });
+      }
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSectionId}`) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', scrollSpy);
+    window.addEventListener('resize', scrollSpy);
+    document.addEventListener('DOMContentLoaded', scrollSpy);
+    // Ejecutar inmediatamente en la carga
+    scrollSpy();
+
+    // ===== TABLE EXPAND ON CLICK =====
+    (function () {
+      const overlay = document.createElement('div');
+      overlay.id = 'table-overlay';
+      document.body.appendChild(overlay);
+
+      let expandedWrapper = null;
+      let originalParent = null;
+      let originalNextSibling = null;
+      let originalStyles = {};
+
+      function expandTable(wrapper) {
+        if (expandedWrapper) return;
+
+        originalParent = wrapper.parentNode;
+        originalNextSibling = wrapper.nextSibling;
+        originalStyles = {
+          position: wrapper.style.position,
+          width: wrapper.style.width,
+          maxWidth: wrapper.style.maxWidth,
+          marginBottom: wrapper.style.marginBottom,
+        };
+
+        expandedWrapper = wrapper;
+        document.body.appendChild(wrapper);
+        wrapper.classList.add('expanded');
+        document.body.classList.add('table-modal-open');
+
+        requestAnimationFrame(() => {
+          overlay.style.display = 'block';
+          requestAnimationFrame(() => overlay.classList.add('active'));
+        });
+      }
+
+      function collapseTable() {
+        if (!expandedWrapper) return;
+
+        overlay.classList.remove('active');
+        overlay.style.display = 'none';
+        expandedWrapper.classList.remove('expanded');
+        document.body.classList.remove('table-modal-open');
+
+        if (originalNextSibling) {
+          originalParent.insertBefore(expandedWrapper, originalNextSibling);
+        } else {
+          originalParent.appendChild(expandedWrapper);
+        }
+
+        Object.assign(expandedWrapper.style, originalStyles);
+        expandedWrapper = null;
+        originalParent = null;
+        originalNextSibling = null;
+        originalStyles = {};
+      }
+
+      document.querySelectorAll('.table-responsive').forEach(wrapper => {
+        wrapper.addEventListener('click', (e) => {
+          if (wrapper.classList.contains('expanded')) {
+            collapseTable();
+          } else {
+            expandTable(wrapper);
+          }
+          e.stopPropagation();
+        });
+      });
+
+      // Clicking the overlay closes the expanded table
+      overlay.addEventListener('click', collapseTable);
+
+      // ESC key also collapses
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') collapseTable();
+      });
+    })();
+  </script>
+</body>
+
 </html>
