@@ -1322,14 +1322,36 @@
 
       <div class="content-block info-box">
         <h4>Modelo Final Resultante</h4>
-        <div class="tags">
-          <span class="tag">CLIENTES</span>
-          <span class="tag">CARGOS</span>
-          <span class="tag">EMPLEADOS</span>
-          <span class="tag">REPUESTOS</span>
-          <span class="tag">VENTAS</span>
-          <span class="tag">DETALLE_VENTA</span>
-        </div>
+        <h2><span class="badge">Entregable 5</span> <i class="fas fa-file-code"></i> Script SQL PostgreSQL</h2>
+      <div class="code-container">
+        <pre><code class="language-sql">--CLIENTES
+cedula_cliente (PK)
+nombre_cliente
+barrio_cliente
+ciudad_cliente
+CARGOS
+id_cargo (PK)
+nombre_cargo
+salario
+EMPLEADOS
+cod_empleado (PK)
+nombre_empleado
+id_cargo (FK)
+REPUESTOS
+cod_repuesto (PK)
+nombre_repuesto
+categoria
+precio_unitario
+VENTAS
+id_venta (PK)
+fecha
+cedula_cliente (FK)
+cod_empleado (FK)
+DETALLE_VENTA
+id_venta (PK, FK)
+cod_repuesto (PK, FK)
+cantidad</code></pre>
+      </div>
       </div>
           </section>
             
